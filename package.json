@@ -1,0 +1,12 @@
+{
+	"name": "onyx-config",
+	"description": "Read configuration data from text file in run-time.",
+	"license": "MIT",
+	"copyright": "Copyright © 2014, onyx",
+	"authors": ["Oleg Nykytenko (onyx)"],
+	"targetType": "library",
+	"targetPath":"./bin",
+
+	"dependencies": {
+	}
+}
