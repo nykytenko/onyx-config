@@ -1,5 +1,5 @@
 /**
- * Parse configure file (or configure string array) to ConfBundle
+ * Parse configuration file (or configure string array) to ConfBundle
  *
  * Copyright: © 2014 onyx
  * License: MIT license. License terms written in licence.txt file
@@ -14,7 +14,7 @@
  * ------------------------------------------------------------------------
  * Build ConfBundle from config file:
  * ------------------------------------------------------------------------
- * auto bundle = buildConfBundle("./conf/file.conf")
+ * auto bundle = buildConfBundle("./conf/file.conf");
  *
  * ------------------------------------------------------------------------
  * Build ConfBundle from string array:
@@ -60,17 +60,13 @@
  *
  * [data_receive]
  * #----------------------------------------------------------------------------------------------------
- * # Adr in		Adr_out		type_of_data	name_of_data		send_to_next	channel		Formula
+ * # Addr in	Addr_out	type_of_data	name_of_data		send_to_next	channel		Formula
  * # KPR_adr	UTS_PMZ															priority
  * #----------------------------------------------------------------------------------------------------
  * #
- * #0xC000		0xC000		0x0B			XGES_Р_Станції		yes					1		(2*{0xC000}+10)+(-0.2*{0xC179}-5)+(0*{0xC180}+0)
- * #0xC000~1	0xC001		0x0B			XGES_Р_Станції		yes					2		(1*{0xC000}+0)
- * #0xC179		0xC179		0x0B			XaES_Р_Станції		yes					1		1*{0xC179}+0
- *
- * #KrGES											
- * 0xC000		0x014B		0x0B			Рстанции			yes					1		(32*{0xC000}+0)
- *
+ * 0xC000		0xC000		0x0B			XGES_Р_Станції		yes					1		(2*{0xC000}+10)+(-0.2*{0xC179}-5)+(0
+ * 0xC000~1	    0xC001		0x0B			XYGES_Р_Станції		yes					2		(1*{0xC000}+0)
+ * 0xC179		0xC179		0x0B			XaES_Р_Станції		yes					1		1*{0xC179}+0
  *
  */
 module onyx.config.parser;
@@ -95,7 +91,7 @@ immutable startGlKeySymbol = "[";
 immutable endGlKeySymbol = "]";
 
 /*
- * Separator symbols in all lines, exclude placed after GlKey with prefix: dataGlKeyPrefix
+ * Separator symbol in all lines, exclude placed after GlKey with prefix: dataGlKeyPrefix
  */
 immutable keySeparator = "=";
 
