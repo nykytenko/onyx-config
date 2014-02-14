@@ -13,14 +13,14 @@ Configuration text file ("./conf/test.conf"):
 	#  |--- This is Key
  
 	mod_type = RptR11Transceiver
-	#  		^
-	#  		|--- This is Value
+	#               ^
+	#               |--- This is Value
 
 	[log]
 	#-----------------------------------------------------------------
 	logging = on #off
-	#  	^
-	#  	|--- This is Key to Value Separator
+	#       ^
+	#       |--- This is Key to Value Separator
 
 	file_name_pattern = KPR.%d{yyyy-MM-dd}.log.gz
 	level = info #error, warn, debug, info, trace
@@ -41,18 +41,18 @@ Configuration text file ("./conf/test.conf"):
 	#----------------------------------------------------------------------------------------------------
 	#
 	0xC000	  0xC000   0x0B	        XGES_Р		yes	    1      (2*{0xC000}+10)+(-0.2*{0xC179}-5)
-	#  	^
-	#  	|--- This is Key to Value Separator for GlKey with prefix "data"
+	#       ^
+	#       |--- This is Key to Value Separator for GlKey with prefix "data"
 
 	0xC000~1  0xC001   0x0B	      	XYGES_Р		yes	    2      (1*{0xC000}+0)
 	#  ^
 	#  |--- This is Key
 
 	0xC179	  0xC179   0x0B	      	XaES_Р		yes	    1	   1*{0xC179}+0
-	#  		    ^
-	#  		    |--- This is possition 1 Value
-	#	     ^
-	#  	     |--- This is possition 0 Value 
+	#                   ^
+	#                   |--- This is possition 1 Value
+	#            ^
+	#            |--- This is possition 0 Value 
 		
 
 
