@@ -32,14 +32,14 @@ import std.conv;
  * 							..............
  * 							KeyM -> ValuesM
  * 										|
- * 										|=> line_numberA -> [DataValue1, DataValue2, ... DataValueP]
- * 											line_numberB -> [DataValue1, DataValue2, ... DataValueQ]
- * 											........................................................
- * 											line_numberX -> [DataValue1, DataValue2, ... DataValueR]
+ * 										|=> [DataValue1, DataValue2, ... DataValueP]
+ * 											[DataValue1, DataValue2, ... DataValueQ]
+ * 											........................................
+ * 											[DataValue1, DataValue2, ... DataValueR]
  */
 
 /************************************************************************************/
-/* Configure bundle element types 													*/
+/* Configuration bundle element types 													*/
 /************************************************************************************/
 /**
  * GlKey - string key in ConfBundle data array
@@ -61,7 +61,7 @@ alias string Key;
  * int - line number in configure file
  * string[] - config data
  */
-alias Tuple!(int, string[]) Values;
+alias string[] Values;
 
 
 /************************************************************************************/
@@ -109,7 +109,7 @@ struct ConfBundle
 		immutable glValue = getGlValue(glKey);
 		if (!(key in glValue)) throw new ConfException("In conf bundle no present key: ["~glKey~"] -> "~key);
 		immutable values = glValue[key];
-		if (/*(values is null) ||*/ (values[1].length == 0))
+		if ((values is null) || (values.length == 0))
 			throw new ConfException("["~glKey~"] -> "~key~" = values is no present");
 		return values;
 	} 
@@ -126,9 +126,9 @@ struct ConfBundle
 		if (pos<0)
 			throw new ConfException("In conf bundle get config value from position < 0 (pos = "~to!string(pos)~")");
 		immutable tValues = getValues(glKey, key);
-		if ((tValues[1].length <= pos) || (tValues[1][pos] is null))
+		if ((tValues.length <= pos) || (tValues[pos] is null))
 			throw new ConfException("["~glKey~"] -> "~key~" = values["~to!string(pos)~"] is no present");
-		return tValues[1][pos];
+		return tValues[pos];
 	}
 	
 	/**
@@ -197,26 +197,27 @@ unittest
 	import onyx.config.parser;
 
 	writeln("unittest start");
-	string[int] s = 
-		[1:"[general]",
-		 2:"module_name = Main",
-		 3:"[log]",
-		 4:"logging = on",
-		 5:"level = info",
-		 6:"[data_receive]",
-		 7:"0xC000		0x014B		0x0B		Рстанции	yes		1		(32*{0xC000}+0)"];
+	string[] s = 
+		["[general]",
+		 "module_name = Main",
+		 "[log]",
+		 "logging = on",
+		 "level = info",
+		 "[data_receive]",
+		 "0xC000		0x014B		0x0B		Рстанции	yes		1		(32*{0xC000}+0)"];
+
 	auto bundle = buildConfBundle(s); 
 
 	// getGlValue test
 	{
 		auto glValue = bundle.getGlValue("general");
-		assert (glValue == cast (immutable)["module_name":tuple(2, ["Main"])]);
+		assert (glValue == cast (immutable)["module_name":["Main"]]);
 	}
 
 	// getValues test
 	{
 		auto values = bundle.getValues("log", "level");
-		assert (values == tuple(5, ["info"]));
+		assert (values == ["info"]);
 	}
 
 	// getValue test (3 pos)

@@ -19,21 +19,21 @@
  * ------------------------------------------------------------------------
  * Build ConfBundle from string array:
  * ------------------------------------------------------------------------
- * private pure nothrow string[int] buildConfLines()
+ * private pure nothrow string[] buildConfLines()
  * {
- *		return 	[1:"[general]",
- *				 2:"module_name = main",
- *				 3:"[log]",
- *				 4:"logging = "on",
- *				 5:"level = info",
- *				 6:"file_archive = yes,
- *				 7:"file_name_pattern = main.log"];
+ *		return 	["[general]",
+ *				 "module_name = main",
+ *				 "[log]",
+ *				 "logging = "on",
+ *				 "level = info",
+ *				 "file_archive = yes,
+ *				 "file_name_pattern = main.log"];
  * }
  *
  * auto bundle = buildConfBundle(buildConfLines());
  *
  * ------------------------------------------------------------------------
- * Configure file Exaple:
+ * Configuration file Exaple:
  * ------------------------------------------------------------------------
  * # This is config file for KPR RptR11 protocol Transceiver
  *
@@ -124,15 +124,23 @@ ConfBundle buildConfBundle(string configFilePath)
 			"in line = "~to!string(ioe.line)~"msg = "~ioe.msg);
 }
 
+ConfBundle buildConfBundle(string[] configLines)
+{
+	string[int] outStr;
+	int index = 0;
+	foreach(line; configLines)	outStr[++index] = line;
+	return buildConfBundle(outStr);
+}
+
 /++
  * Build ConfBundle from configure Array of strings
  *
  * Returns: builded configure bundle
  * Throws: ConfException
  +/
-ConfBundle buildConfBundle(string[int] configStrings)
+ConfBundle buildConfBundle(string[int] configLines)
 {
-	return parse(cleanTrash(configStrings));
+	return parse(cleanTrash(configLines));
 }
 
 /**
@@ -144,7 +152,6 @@ ConfBundle buildConfBundle(string[int] configStrings)
 private ConfBundle parse(string[int] lines)
 {
 	GlValue[GlKey] bundle;
-	//if (lines == null) return *(new ConfBundle(cast (immutable GlValue[GlKey]) bundle));	//!!!!!!!!!!!!!!!
 	if (lines == null) return ConfBundle(cast (immutable GlValue[GlKey]) bundle);	//!!!!!!!!!!!!!!!
 	
 	GlKey glKey = "";
@@ -200,7 +207,7 @@ private Tuple!(Key, Values) lineToConf(int lineNumber, string line, string glKey
 	auto workLine = line[separatorPos+1..$].strip;
 	if (workLine == "") throw new ConfException ("Value for key is no in line "~to!string(lineNumber)~": "~line);
 	
-	auto values = tuple(lineNumber, workLine.split());
+	auto values = workLine.split();
 	return tuple(key, values);
 }
 
@@ -232,7 +239,7 @@ private string[int] copyFileToStrings(string filePath)
 {
 	string[int] outStr;
 	auto rlines = File(filePath, "r").byLine();
-	int index;
+	int index = 0;
 	foreach(line; rlines)	outStr[++index] = to!string(line);
 	return outStr;
 }
@@ -245,7 +252,7 @@ private string[int] copyFileToStrings(string filePath)
  */
 private string[int] cleanTrash(string[int] init)
 {
-	if (init == null) return null;
+	if (init is null) return null;
 	else 
 	{
 		string[int] _out;
@@ -270,3 +277,4 @@ unittest
 	auto s = [1:"	  String with spaces, tabs, "~commentSymbol~"comments"];
 	assert (cleanTrash(s) == [1:"String with spaces, tabs,"]);
 }
+
