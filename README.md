@@ -1,6 +1,16 @@
 # onyx-config
 
-Read configuration data from text file in run-time and  packs data into container (ConfBundle).
+"onyx-config" designed for working with configuration data in run time.
+
+
+## Key features:
+ - The ConfBundle is container for save configuration data.
+ - A ConfBundle may be created from text file or string array in run-time.
+ - "#" is comment symbol in text file.
+ - "=" and "->" is Key to Value separators in text file.
+
+
+
 
 ## Examples:
 
@@ -31,7 +41,6 @@ Configuration text file ("./conf/test.conf"):
 	#------------------------------------------------------------
 	regime = slave #master - KPR; slave - OIK;
 	adr_RTU = 0x0A
-	data_flow = input # input; output; io; no_io
 	channel_switch_timeout = 1000 100 10		# many values in one line is possible
 
 	[data_receive] # <-- This is "data" prefix Global Key (GlKey)
@@ -40,17 +49,17 @@ Configuration text file ("./conf/test.conf"):
 	# KPR_adr UTS_PMZ					  priority
 	#----------------------------------------------------------------------------------------------------
 	#
-	0xC000	  0xC000   0x0B	        XGES_Р		yes	    1      (2*{0xC000}+10)+(-0.2*{0xC179}-5)
-	#       ^
-	#       |--- This is Key to Value Separator for GlKey with prefix "data"
+	0xC000	 ->  0xC000   0x0B	        XGES_Р		yes	    1      (2*{0xC000}+10)+(-0.2*{0xC179}-5)
+	#        ^
+	#        |--- This is Key to Value Separator too
 
-	0xC000~1  0xC001   0x0B	      	XYGES_Р		yes	    2      (1*{0xC000}+0)
+	0xC000~1 ->  0xC001   0x0B	      	XYGES_Р		yes	    2      (1*{0xC000}+0)
 	#  ^
 	#  |--- This is Key
 
-	0xC179	  0xC179   0x0B	      	XaES_Р		yes	    1	   1*{0xC179}+0
-	#                   ^
-	#                   |--- This is possition 1 Value
+	0xC179	 ->  0xC179   0x0B	      	XaES_Р		yes	    1	   1*{0xC179}+0
+	#                      ^
+	#                      |--- This is possition 1 Value
 	#            ^
 	#            |--- This is possition 0 Value 
 		
@@ -58,13 +67,12 @@ Configuration text file ("./conf/test.conf"):
 
 Source code example:
 
-	import onyx.config.parser;
 	import onyx.config.bundle;
 
 	void main()
 	{
 		/* Build ConfBundle from config file */
-		auto bundle = buildConfBundle("./conf/file.conf");
+		auto bundle = ConfBundle("../test/test.conf");
 
 		/* get value for GlKey:"log", Key:"level" */
 		auto value1 = bundle.getValue("log", "level"); 
@@ -79,16 +87,31 @@ Source code example:
 		assert (value3 == "100");
 
 		/* get value for GlKey:"data_receive", Key:"0xC00", position:3
-		auto value3 = bundle.getValue("data_receive", "0xC000", 3);
-		assert (value3 == "yes");
+		auto value4 = bundle.getValue("data_receive", "0xC000", 3);
+		assert (value4 == "yes");
+		
+		/* Build another bundle from string array */
+		string[] s2 = 
+		  ["[protocol]",
+		   "data_flow = input",
+		   "[new_gl_key]",
+		   "test_key = value1 value2"];	
+		auto bundle2 = ConfBundle(s2);
+		
+		/* Add two bundles. Created new bundle with data from both bundles */
+		auto newBundle = bundle + bundle2;
+		auto value5 = newBundle.getValue("log", "level"); 
+		assert (value5 == "info");
+		auto value6 = newBundle.getValue("new_gl_key", "test_key", 1); 
+		assert (value6 == "value2");
+		
+		/* Get from bundle one global data part (in example with global key: "log")
+		auto partBundle = newBundle.subBundle("log");
 	}
 
-## Key features:
 
- - "#" is comment symbol
- - "=" is Key to Value separator for all line
- - "space" or "tab" is Key to Value separator in lines, place after GlKey with prefix "data" (for example [data_receive])
- = 
+ 
+ 
 
 
 

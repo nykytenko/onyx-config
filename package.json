@@ -4,9 +4,22 @@
 	"license": "MIT",
 	"copyright": "Copyright © 2014, onyx",
 	"authors": ["Oleg Nykytenko (onyx)"],
-	"targetType": "library",
+
 	"targetPath":"./bin",
 
-	"dependencies": {
-	}
+	"configurations": [
+		{
+			"name":"unittest",
+			"targetType": "executable",
+			"sourcePaths": ["test/", "source/"],
+			"mainSourceFile": "test/main.d",
+			"versions": ["configFileUnittest"]
+		},
+		{
+			"name": "library",
+			"targetType": "library",
+			"excludedSourceFiles": ["test/main.d"],
+		}
+	]
+
 }
