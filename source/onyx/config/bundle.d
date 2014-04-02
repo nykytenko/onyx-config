@@ -215,7 +215,17 @@ struct ConfBundle
 	 * Throws ConfException
 	 */
 	pure immutable (string) getValue(GlKey glKey, Key key) {return getValue(glKey, key, 0);}
-	
+
+
+	/**
+	 * Get one int value from container
+	 *
+	 * Returns: Value - first int value from configure line
+	 * Value formats: dec (123), hex (0x123), bin (0b101)
+	 *
+	 * Throws: ConfException, ConvException, ConvOverflowException
+	 */
+	pure immutable(int) getIntValue(GlKey glKey, Key key) {return strToInt(getValue(glKey, key));}
 
 	/**
 	 * Short for getting value with "general" GlKey
@@ -530,6 +540,37 @@ private string[int] cleanTrash(string[int] init)
 	}
 }
 
+/**
+ * String to int convert
+ * dec, hex and bin formats
+ *
+ * Throws: ConvException, ConvOverflowException
+ */
+private pure int strToInt (string strNum){
+	string sign = "";
+
+	if (strNum.length == 0) return 0;
+	
+	if (strNum.length == 1) {
+		if ((strNum[0] == '-') || (strNum[0] == '+') || (strNum[0] == '0')) return 0;
+		return to!int(strNum); 
+	}
+	
+	if (strNum[0] == '-'){
+		sign = "-";
+		strNum = strNum[1..$];
+	}else if (strNum[0] == '+'){
+		sign = "+";
+		strNum = strNum[1..$];
+	}
+
+	if (strNum.length < 3) return to!int(sign ~ strNum);
+
+	if ((strNum[0..2] == "0X") || (strNum[0..2] == "0x")) return to!int(strNum[2..$], 16);
+	else if ((strNum[0..2] == "0B") || (strNum[0..2] == "0b")) return to!int(strNum[2..$], 2);
+	else return to!int(sign ~ strNum);
+}
+
 
 
 /************************************************************************************/
@@ -577,6 +618,12 @@ unittest
 	{
 		auto value = bundle.getValue("data_receive", "0xC000");
 		assert (value == "0x014B");
+	}
+
+	// getIntValue test (0 pos)
+	{
+		auto value = bundle.getIntValue("data_receive", "0xC000");
+		assert (value == 0x014B);
 	}
 
 	// getGeneralValue test
