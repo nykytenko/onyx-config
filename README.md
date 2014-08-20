@@ -4,7 +4,7 @@
 
 
 ## Key features:
- - The ConfBundle is container for save configuration data.
+ - The ConfBundle is immutable container for save configuration data.
  - A ConfBundle may be created from text file or string array in run-time.
  - "#" is comment symbol in text file.
  - "=" and "->" is Key to Value separators in text file.
@@ -72,22 +72,22 @@ Source code example:
 	void main()
 	{
 		/* Build ConfBundle from config file */
-		auto bundle = ConfBundle("../test/test.conf");
+		auto bundle = immutable ConfBundle("../test/test.conf");
 
 		/* get value for GlKey:"log", Key:"level" */
-		auto value1 = bundle.getValue("log", "level"); 
+		auto value1 = bundle.value("log", "level"); 
 		assert (value1 == "info");
 
 		/* short form to get the value for GlKey:"general", Key:"module_name" */
-		auto value2 = bundle.getGeneralValue("module_name");
+		auto value2 = bundle.generalValue("module_name");
 		assert (value2 == "KPR");
 
 		/* get value for line with many values from possition 1 */
-		auto value3 = bundle.getValue("protocol", "channel_switch_timeout", 1); 
+		auto value3 = bundle.value("protocol", "channel_switch_timeout", 1); 
 		assert (value3 == "100");
 
 		/* get value for GlKey:"data_receive", Key:"0xC00", position:3
-		auto value4 = bundle.getValue("data_receive", "0xC000", 3);
+		auto value4 = bundle.value("data_receive", "0xC000", 3);
 		assert (value4 == "yes");
 		
 		/* Build another bundle from string array */
@@ -96,13 +96,13 @@ Source code example:
 		   "data_flow = input",
 		   "[new_gl_key]",
 		   "test_key = value1 value2"];	
-		auto bundle2 = ConfBundle(s2);
+		auto bundle2 = immutable ConfBundle(s2);
 		
 		/* Add two bundles. Created new bundle with data from both bundles */
 		auto newBundle = bundle + bundle2;
-		auto value5 = newBundle.getValue("log", "level"); 
+		auto value5 = newBundle.value("log", "level"); 
 		assert (value5 == "info");
-		auto value6 = newBundle.getValue("new_gl_key", "test_key", 1); 
+		auto value6 = newBundle.value("new_gl_key", "test_key", 1); 
 		assert (value6 == "value2");
 		
 		/* Get from bundle one global data part (in example with global key: "log")
