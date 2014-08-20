@@ -78,6 +78,8 @@
 
 module onyx.config.bundle;
 
+//@safe:
+
 import std.typecons;
 import std.exception;
 import std.conv;
@@ -137,21 +139,31 @@ struct ConfBundle
 	
 
 	/**
-	 * Primary constructors
+	 * Build Bundle from text file
+	 *
+	 * Throws: ConfException, Exception
 	 */
-	this(string filePath)
+	this(string filePath) immutable
 	{
 		_conf = buildConfContainer(filePath);
 	}
 
 
-	this(string[] confLines)
+	/**
+	 * Build Bundle from string array
+	 *
+	 * Throws: ConfException, Exception	 
+	 */
+	this(string[] confLines) immutable
 	{
 		_conf = buildConfContainer(confLines);
 	}
 
 
-	private this(immutable GlValue[GlKey] conf)
+	/**
+	 * Build Bundle from Bundle
+	 */
+	private this(immutable GlValue[GlKey] conf) nothrow pure immutable
 	{
 		_conf = conf;
 	}
@@ -161,9 +173,10 @@ struct ConfBundle
 	 * Get Global value from configure container
 	 *
 	 * Returns: GlValue - content of one configure block
+	 *
 	 * Throws: ConfException
 	 */
-	pure immutable (GlValue) getGlValue(GlKey glKey)
+	immutable (GlValue) glValue(GlKey glKey) pure immutable
 	{
 		if (glKey is null) throw new ConfException("Global key is null");
 		if (!(glKey in _conf)) throw new ConfException("In conf bundle no present Global Key: ["~glKey~"]");
@@ -177,17 +190,18 @@ struct ConfBundle
 	 * Get Values from container
 	 *
 	 * Returns: Values - content of one configure line
+	 *
 	 * Throws: ConfException
 	 */
-	pure immutable (Values) getValues(GlKey glKey, Key key)
+	immutable (Values) values(GlKey glKey, Key key) pure immutable
 	{
 		if (key is null) throw new ConfException("Get config values for key = null");
-		immutable glValue = getGlValue(glKey);
-		if (!(key in glValue)) throw new ConfException("In conf bundle no present key: ["~glKey~"] -> "~key);
-		immutable values = glValue[key];
-		if ((values is null) || (values.length == 0))
+		immutable glV = glValue(glKey);
+		if (!(key in glV)) throw new ConfException("In conf bundle no present key: ["~glKey~"] -> "~key);
+		immutable vs = glV[key];
+		if ((vs is null) || (vs.length == 0))
 			throw new ConfException("["~glKey~"] -> "~key~" = values is no present");
-		return values;
+		return vs;
 	} 
 
 
@@ -197,11 +211,11 @@ struct ConfBundle
 	 * Returns: Value - one string value from configure line
 	 * Throws: ConfException
 	 */
-	pure immutable (string) getValue(GlKey glKey, Key key, int pos)
+	immutable (string) value(GlKey glKey, Key key, int pos) pure immutable
 	{
 		if (pos<0)
 			throw new ConfException("In conf bundle get config value from position < 0 (pos = "~to!string(pos)~")");
-		immutable tValues = getValues(glKey, key);
+		immutable tValues = values(glKey, key);
 		if ((tValues.length <= pos) || (tValues[pos] is null))
 			throw new ConfException("["~glKey~"] -> "~key~" = values["~to!string(pos)~"] is no present");
 		return tValues[pos];
@@ -214,7 +228,10 @@ struct ConfBundle
 	 * Returns: Value - first string value from configure line
 	 * Throws ConfException
 	 */
-	pure immutable (string) getValue(GlKey glKey, Key key) {return getValue(glKey, key, 0);}
+	immutable (string) value(GlKey glKey, Key key) pure immutable
+	{
+		return value(glKey, key, 0);
+	}
 
 
 	/**
@@ -225,7 +242,10 @@ struct ConfBundle
 	 *
 	 * Throws: ConfException, ConvException, ConvOverflowException
 	 */
-	pure immutable(int) getIntValue(GlKey glKey, Key key) {return strToInt(getValue(glKey, key));}
+	immutable(int) intValue(GlKey glKey, Key key) pure immutable 
+	{
+			return strToInt(value(glKey, key));
+	}
 
 	/**
 	 * Short for getting value with "general" GlKey
@@ -233,7 +253,10 @@ struct ConfBundle
 	 * Returns: Value - first string value from  line in "general" configure block
 	 * Throws: ConfException
 	 */
-	pure immutable (string) getGeneralValue(Key key) {return getValue("general", key, 0);}
+	immutable (string) generalValue(Key key) pure immutable
+	{
+		return value("general", key, 0);
+	}
 	
 
 	/**
@@ -241,14 +264,17 @@ struct ConfBundle
 	 *
 	 * Returns: if value present in bundle - true, else - false
 	 */
-	pure nothrow bool isValuePresent(GlKey glKey, Key key, int pos)
+	bool isValuePresent(GlKey glKey, Key key, int pos) nothrow pure immutable
 	{
 		try
 		{
-			getValue(glKey, key, pos);
+			value(glKey, key, pos);
 			return true;
 		}
-		catch(Exception e){return false;}
+		catch(Exception e)
+		{
+			return false;
+		}
 	}
 	
 
@@ -257,7 +283,10 @@ struct ConfBundle
 	 *
 	 * Returns: if value present in bundle - true, else - false
 	 */
-	pure bool isValuePresent(GlKey glKey, Key key){return isValuePresent(glKey, key, 0);}
+	bool isValuePresent(GlKey glKey, Key key) pure immutable nothrow
+	{
+		return isValuePresent(glKey, key, 0);
+	}
 	
 
 	/**
@@ -265,15 +294,29 @@ struct ConfBundle
 	 *
 	 * Returns: if key present in bundle - true, else - false
 	 */
-	bool isGlKeyPresent(GlKey glKey){return ((glKey in _conf)==null)?false:true;}
+	bool isGlKeyPresent(GlKey glKey) immutable pure nothrow
+	{
+		return ((glKey in _conf)==null)?false:true;
+	}
 
 
-	GlKey[] glKeys()
+	/**
+	 * Get global keys present in configure bundle 
+	 *
+	 * Returns: GlKey array
+	 */
+	immutable (GlKey[]) glKeys() immutable pure nothrow
 	{
 		return _conf.keys;
 	}
 
-	Key[] keys(GlKey glKey)
+
+	/**
+	 * Get keys present in configure bundle 
+	 *
+	 * Returns: Key array
+	 */
+	immutable (Key[]) keys(GlKey glKey) immutable pure nothrow
 	{
 		return _conf[glKey].keys;
 	}
@@ -289,13 +332,13 @@ struct ConfBundle
 	 * auto bundle2 = ConfBundle(confArray);
 	 * auto bundle = bundle1 + bundle2;
 	 */
-	ConfBundle opBinary(string op)(ConfBundle rConf) if (op == "+")
+	immutable (ConfBundle) opBinary(string op)(immutable ConfBundle rConf) immutable if (op == "+")
 	{
 		GlValue[GlKey] conf = (cast(GlValue[GlKey])_conf);
 
 		foreach (glKey; rConf.glKeys)
 		{
-			auto rGlValue = cast(GlValue)rConf.getGlValue(glKey);
+			auto rGlValue = cast(GlValue)rConf.glValue(glKey);
 			if (!this.isGlKeyPresent(glKey))
 				conf[glKey] = rGlValue;
 			else
@@ -310,7 +353,7 @@ struct ConfBundle
 				}
 			}
 		}
-		return ConfBundle(cast (immutable) conf);
+		return immutable ConfBundle(cast (immutable) conf);
 	}
 
 	/**
@@ -318,9 +361,9 @@ struct ConfBundle
 	 *
 	 * Returns: New bundle with one global part data
 	 */
-	ConfBundle subBundle(GlKey glKey)
+	immutable (ConfBundle) subBundle(GlKey glKey) immutable
 	{
-		return ConfBundle([glKey:_conf[glKey]]);
+		return immutable ConfBundle([glKey:_conf[glKey]]);
 	}
 }
 
@@ -372,8 +415,9 @@ private
 /++
  * Build ConfBundle from configure file
  *
- * Returns: builded configure bundle
- * Throws: ConfException
+ * Returns: builded configuration bundle
+ *
+ * Throws: ConfException, Exception
  +/
 private immutable (GlValue[GlKey]) buildConfContainer(string configFilePath)
 {
@@ -389,6 +433,14 @@ private immutable (GlValue[GlKey]) buildConfContainer(string configFilePath)
 			"in line = "~to!string(ioe.line)~"msg = "~ioe.msg);
 }
 
+
+/++
+ * Build ConfBundle from string array
+ *
+ * Returns: builded configuration bundle
+ *
+ * Throws: ConfException, Exception
+ +/
 private immutable (GlValue[GlKey]) buildConfContainer(string[] configLines)
 {
 	string[int] outStr;
@@ -397,22 +449,26 @@ private immutable (GlValue[GlKey]) buildConfContainer(string[] configLines)
 	return buildConfContainer(outStr);
 }
 
+
 /++
  * Build ConfBundle from configure Array of strings
  *
  * Returns: builded configure bundle
- * Throws: ConfException
+ *
+ * Throws: ConfException, Exception
  +/
 private immutable (GlValue[GlKey]) buildConfContainer(string[int] configLines)
 {
 	return parse(cleanTrash(configLines));
 }
 
+
 /**
  * Parse array and place data to bundle
  *
  * Returns: builded configure bundle
- * Throws: ConfException
+ *
+ * Throws: ConfException, Exception
  */
 private immutable (GlValue[GlKey]) parse(string[int] lines)
 {
@@ -449,7 +505,8 @@ private immutable (GlValue[GlKey]) parse(string[int] lines)
  * Convert one string line to configure record
  *
  * Returns: packed configure line
- * Throws: ConfException
+ *
+ * Throws: ConfException, Exception
  */
 private Tuple!(Key, Values) lineToConf(int lineNumber, string line, string glKey)
 {
@@ -485,6 +542,8 @@ private Tuple!(Key, Values) lineToConf(int lineNumber, string line, string glKey
  * Seek global key in line, return it if present
  *
  * Returns: global key or ""
+ *
+ * Throws: ??Exception from string.indexOf 
  */
 private string getFromLineGlKey(int lineNumber, string line)
 {
@@ -501,6 +560,7 @@ private string getFromLineGlKey(int lineNumber, string line)
  * read file and place configure data to Array of strings (Array key - line number in file)
  *
  * Returns: configure data packed in array of strings
+ *
  * Throws: ErrnoException - open file exception
  * Throws: StdioException - read from file exception
  */
@@ -517,6 +577,7 @@ private string[int] copyFileToStrings(string filePath)
  * Trim in lines spaces, tabs, comments
  *
  * Returns: lines without trash on sides
+ *
  * Throws: ??Exception from string.indexOf 
  */
 private string[int] cleanTrash(string[int] init)
@@ -593,42 +654,42 @@ unittest
 		 "[data_receive]",
 		 "0xC000 ->		0x014B		0x0B		Рстанции	yes		1		(32*{0xC000}+0)"];
 
-	auto bundle = ConfBundle(s);
+	auto bundle = immutable ConfBundle(s);
 
 	// getGlValue test
 	{
-		auto glValue = bundle.getGlValue("general");
+		auto glValue = bundle.glValue("general");
 		assert (glValue == cast (immutable)["module_name":["Main"]]);
 	}
 
 	// getValues test
 	{
-		auto values = bundle.getValues("log", "level");
+		auto values = bundle.values("log", "level");
 		assert (values == ["info"]);
 
 	}
 
 	// getValue test (N pos)
 	{ 
-		auto value = bundle.getValue("data_receive", "0xC000", 3);
+		auto value = bundle.value("data_receive", "0xC000", 3);
 		assert (value == "yes");
 	}
 
 	// getValue test (0 pos)
 	{
-		auto value = bundle.getValue("data_receive", "0xC000");
+		auto value = bundle.value("data_receive", "0xC000");
 		assert (value == "0x014B");
 	}
 
 	// getIntValue test (0 pos)
 	{
-		auto value = bundle.getIntValue("data_receive", "0xC000");
+		auto value = bundle.intValue("data_receive", "0xC000");
 		assert (value == 0x014B);
 	}
 
 	// getGeneralValue test
 	{
-		auto value = bundle.getGeneralValue("module_name");
+		auto value = bundle.generalValue("module_name");
 		assert (value == "Main");
 	}
 
@@ -653,35 +714,35 @@ unittest
 {
 	version(configFileUnittest)
 	{
-		auto bundle = ConfBundle("../test/test.conf");
+		auto bundle = immutable ConfBundle("../test/test.conf");
 
 		// getGlValue test
 		{
-			auto glValue = bundle.getGlValue("general");
+			auto glValue = bundle.glValue("general");
 			assert (glValue == cast (immutable)["mod_name":["KPR"], "mod_type":["RptR11Transceiver"]]);
 		}
 
 		// getValues test
 		{
-			auto values = bundle.getValues("protocol", "data_flow");
+			auto values = bundle.values("protocol", "data_flow");
 			assert (values == ["input"]);
 		}
 
 		// getValue test (N pos)
 		{ 
-			auto value = bundle.getValue("data_receive", "0xC000~1", 5);
+			auto value = bundle.value("data_receive", "0xC000~1", 5);
 			assert (value == "(1*{0xC000}+0)");
 		}
 
 		// getValue test (0 pos)
 		{
-			auto value = bundle.getValue("data_receive", "0xC179");
+			auto value = bundle.value("data_receive", "0xC179");
 			assert (value == "0xC179");
 		}
 
 		// getGeneralValue test
 		{
-			auto value = bundle.getGeneralValue("mod_name");
+			auto value = bundle.generalValue("mod_name");
 			assert (value == "KPR");
 		}
 	}
@@ -704,21 +765,21 @@ unittest
 		 "[protocol]",
 		 "data_flow = input"];	 
 
-	auto bundle1 = ConfBundle(s1);
-	auto bundle2 = ConfBundle(s2);
+	auto bundle1 = immutable ConfBundle(s1);
+	auto bundle2 = immutable ConfBundle(s2);
 
 	auto bundle = bundle1 + bundle2;
 
-	auto value1 = bundle.getValue("general", "module_name");
+	auto value1 = bundle.value("general", "module_name");
 	assert (value1 == "Main");
 
-	auto value2 = bundle.getValue("general", "mod_type");
+	auto value2 = bundle.value("general", "mod_type");
 	assert (value2 == "RptR11Transceiver");	
 
-	auto value3 = bundle.getValue("log", "level");
+	auto value3 = bundle.value("log", "level");
 	assert (value3 == "info");	
 
-	auto value4 = bundle.getValue("protocol", "data_flow");
+	auto value4 = bundle.value("protocol", "data_flow");
 	assert (value4 == "input");	
 }
 
@@ -732,7 +793,7 @@ unittest
 		 "[data_receive]",
 		 "0xC000 ->		0x014B		0x0B		Рстанции	yes		1		(32*{0xC000}+0)"];
 
-	auto bundle = ConfBundle(s);
+	auto bundle = immutable ConfBundle(s);
 
 	auto newBundle = bundle.subBundle("log");
 
