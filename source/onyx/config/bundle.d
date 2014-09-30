@@ -174,14 +174,18 @@ struct ConfBundle
 	 *
 	 * Returns: GlValue - content of one configure block
 	 *
-	 * Throws: ConfException
+	 * Throws: GlKeyNotFoundException, ConfException
 	 */
 	immutable (GlValue) glValue(GlKey glKey) pure immutable
 	{
-		if (glKey is null) throw new ConfException("Global key is null");
-		if (!(glKey in _conf)) throw new ConfException("In conf bundle no present Global Key: ["~glKey~"]");
-		if (_conf[glKey].length == 0)
-			throw new ConfException("In conf bundle for  Global Key: ["~glKey~"] no filled by content");
+		if (glKey is null)
+		{
+			throw new ConfException("Global Key is null");
+		}
+		if (!(glKey in _conf)) 
+		{
+			throw new GlKeyNotFoundException("Not found Global Key: ["~glKey~"]");
+		}
 		return _conf[glKey];
 	}
 	
@@ -191,16 +195,24 @@ struct ConfBundle
 	 *
 	 * Returns: Values - content of one configure line
 	 *
-	 * Throws: ConfException
+	 * Throws: ValuesNotFoundException, KeyNotFoundException, GlKeyNotFoundException, ConfException
 	 */
 	immutable (Values) values(GlKey glKey, Key key) pure immutable
 	{
-		if (key is null) throw new ConfException("Get config values for key = null");
+		if (key is null)
+		{
+			throw new ConfException("Key is null");
+		}
 		immutable glV = glValue(glKey);
-		if (!(key in glV)) throw new ConfException("In conf bundle no present key: ["~glKey~"] -> "~key);
+		if (!(key in glV)) 
+		{
+			throw new KeyNotFoundException("Not found Key: ["~glKey~"] -> "~key);
+		}
 		immutable vs = glV[key];
 		if ((vs is null) || (vs.length == 0))
-			throw new ConfException("["~glKey~"] -> "~key~" = values is no present");
+		{
+			throw new ValuesNotFoundException("For key: ["~glKey~"] -> "~key~" values not found");
+		}
 		return vs;
 	} 
 
@@ -209,16 +221,25 @@ struct ConfBundle
 	 * Get one value from container
 	 *
 	 * Returns: Value - one string value from configure line
-	 * Throws: ConfException
+	 *
+	 * Throws: ValueNotFoundException, KeyNotFoundException, GlKeyNotFoundException, ConfException
 	 */
-	immutable (string) value(GlKey glKey, Key key, int pos) pure immutable
+	immutable (string) value(GlKey glKey, Key key, uint pos) pure immutable
 	{
-		if (pos<0)
-			throw new ConfException("In conf bundle get config value from position < 0 (pos = "~to!string(pos)~")");
-		immutable tValues = values(glKey, key);
-		if ((tValues.length <= pos) || (tValues[pos] is null))
-			throw new ConfException("["~glKey~"] -> "~key~" = values["~to!string(pos)~"] is no present");
-		return tValues[pos];
+		string vExceptionMsg = "Not found value: ["~glKey~"] -> "~key~" = values["~to!string(pos)~"]";
+		try
+		{
+			immutable tValues = values(glKey, key);
+			if ((tValues.length <= pos) || (tValues[pos] is null))
+			{
+				throw new ValueNotFoundException(vExceptionMsg);
+			}
+			return tValues[pos];
+		}
+		catch (ValuesNotFoundException vse)
+		{
+			throw new ValueNotFoundException(vExceptionMsg);
+		}
 	}
 	
 
@@ -226,7 +247,8 @@ struct ConfBundle
 	 * Get one value from container
 	 *
 	 * Returns: Value - first string value from configure line
-	 * Throws ConfException
+	 *
+	 * Throws: ValueNotFoundException, KeyNotFoundException, GlKeyNotFoundException, ConfException
 	 */
 	immutable (string) value(GlKey glKey, Key key) pure immutable
 	{
@@ -240,18 +262,21 @@ struct ConfBundle
 	 * Returns: Value - first int value from configure line
 	 * Value formats: dec (123), hex (0x123), bin (0b101)
 	 *
-	 * Throws: ConfException, ConvException, ConvOverflowException
+	 * Throws: ValueNotFoundException, KeyNotFoundException, GlKeyNotFoundException, ConfException
+	 * Throws: ConvException, ConvOverflowException
 	 */
 	immutable(int) intValue(GlKey glKey, Key key) pure immutable 
 	{
 			return strToInt(value(glKey, key));
 	}
 
+
 	/**
 	 * Short for getting value with "general" GlKey
 	 *
 	 * Returns: Value - first string value from  line in "general" configure block
-	 * Throws: ConfException
+	 *
+	 * Throws: ValueNotFoundException, KeyNotFoundException, GlKeyNotFoundException, ConfException
 	 */
 	immutable (string) generalValue(Key key) pure immutable
 	{
@@ -327,6 +352,8 @@ struct ConfBundle
 	 *
 	 * Returns: New Configuration bundle with data from this bundle and rConf bundle
 	 *
+	 * Throws: ConfException
+	 *
 	 * Example:
 	 * auto bundle1 = ConfBundle("./conf1/receiver1.conf");
 	 * auto bundle2 = ConfBundle(confArray);
@@ -334,26 +361,33 @@ struct ConfBundle
 	 */
 	immutable (ConfBundle) opBinary(string op)(immutable ConfBundle rConf) immutable if (op == "+")
 	{
-		GlValue[GlKey] conf = (cast(GlValue[GlKey])_conf);
-
-		foreach (glKey; rConf.glKeys)
+		try
 		{
-			auto rGlValue = cast(GlValue)rConf.glValue(glKey);
-			if (!this.isGlKeyPresent(glKey))
-				conf[glKey] = rGlValue;
-			else
+			GlValue[GlKey] conf = (cast(GlValue[GlKey])_conf);
+
+			foreach (glKey; rConf.glKeys)
 			{
-				auto lGlValue = conf[glKey];
-				foreach (key; rConf.keys(glKey))
+				auto rGlValue = cast(GlValue)rConf.glValue(glKey);
+				if (!this.isGlKeyPresent(glKey))
+					conf[glKey] = rGlValue;
+				else
 				{
-					if (!this.isValuePresent(glKey, key))
+					auto lGlValue = conf[glKey];
+					foreach (key; rConf.keys(glKey))
 					{
-						lGlValue[key] = rGlValue[key];
+						if (!this.isValuePresent(glKey, key))
+						{
+							lGlValue[key] = rGlValue[key];
+						}
 					}
 				}
 			}
+			return immutable ConfBundle(cast (immutable) conf);
 		}
-		return immutable ConfBundle(cast (immutable) conf);
+		catch (ConfException e)
+		{
+			throw cast(ConfException)e;
+		}
 	}
 
 	/**
@@ -367,8 +401,9 @@ struct ConfBundle
 	}
 }
 
+
 /**
- * Configure exception
+ * Configuration exception
  */
 class ConfException:Exception 
 {
@@ -377,6 +412,30 @@ class ConfException:Exception
 		super(exString);
 	}
 }
+
+
+/**
+ * Make class member with getter
+ *
+ */
+template childConfException(string exceptionName)
+{
+	const char[] childConfException =
+
+	"class " ~exceptionName~":ConfException 
+	{
+		@safe pure nothrow this(string exString)
+		{
+			super(exString);
+		}
+	}";
+}
+
+mixin(childConfException!"GlKeyNotFoundException");
+mixin(childConfException!"KeyNotFoundException");
+mixin(childConfException!"ValuesNotFoundException");
+mixin(childConfException!"ValueNotFoundException");
+
 
 
 
@@ -484,19 +543,19 @@ private immutable (GlValue[GlKey]) parse(string[int] lines)
 		{
 			if((glKeyInLine in bundle) != null) 
 				throw new ConfException ("Double use key "~glKey~"  in line "~to!string(num)~": "~lines[num]);// need to testing
-			if(glKey != "") bundle[glKey]=glValue.dup;
+			if(glKey != "") bundle[glKey]=glValue/*.dup*/;
 			glKey = glKeyInLine;
 			glValue = null;
 		}
 		else
 		{
 			if (glKey=="") 
-				throw new ConfException("First nonvoid line not contain global key: "~to!string(num)~": "~lines[num]);
+				throw new ConfException("First nonvoid line not contained global key: "~to!string(num)~": "~lines[num]);
 			Tuple!(Key, Values) parsedLine = lineToConf(num, lines[num], glKey);
 			glValue[parsedLine[0]] = parsedLine[1];
 		}
 	}
-	if(glKey!="") bundle[glKey]=glValue.dup;
+	if(glKey!="") bundle[glKey]=glValue/*.dup*/;
 	return cast (immutable GlValue[GlKey]) bundle;
 }
 
@@ -651,15 +710,22 @@ unittest
 		 "[log]",
 		 "logging = on",
 		 "level = info",
+		 "[empty_gl_key]", // Test GlKey with empty GlValue
 		 "[data_receive]",
 		 "0xC000 ->		0x014B		0x0B		Рстанции	yes		1		(32*{0xC000}+0)"];
 
 	auto bundle = immutable ConfBundle(s);
 
-	// getGlValue test
+	// get GlValue test
 	{
 		auto glValue = bundle.glValue("general");
 		assert (glValue == cast (immutable)["module_name":["Main"]]);
+	}
+
+	// get emty GlValue test
+	{
+		auto glValue = bundle.glValue("empty_gl_key");
+		assert (glValue == null);
 	}
 
 	// getValues test
