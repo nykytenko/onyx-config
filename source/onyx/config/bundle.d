@@ -415,7 +415,7 @@ class ConfException:Exception
 
 
 /**
- * Make class member with getter
+ * Construct exception with parrent: ConfException
  *
  */
 template childConfException(string exceptionName)
