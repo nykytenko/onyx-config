@@ -78,7 +78,7 @@
 
 module onyx.config.bundle;
 
-//@safe:
+@safe:
 
 import std.typecons;
 import std.exception;
@@ -330,6 +330,7 @@ struct ConfBundle
 	 *
 	 * Returns: GlKey array
 	 */
+	@trusted /* array.keys is system */
 	immutable (GlKey[]) glKeys() immutable pure nothrow
 	{
 		return _conf.keys;
@@ -341,6 +342,7 @@ struct ConfBundle
 	 *
 	 * Returns: Key array
 	 */
+	@trusted /* array.keys is system */
 	immutable (Key[]) keys(GlKey glKey) immutable pure nothrow
 	{
 		return _conf[glKey].keys;
@@ -359,6 +361,7 @@ struct ConfBundle
 	 * auto bundle2 = ConfBundle(confArray);
 	 * auto bundle = bundle1 + bundle2;
 	 */
+	@trusted
 	immutable (ConfBundle) opBinary(string op)(immutable ConfBundle rConf) immutable if (op == "+")
 	{
 		try
@@ -529,10 +532,11 @@ private immutable (GlValue[GlKey]) buildConfContainer(string[int] configLines)
  *
  * Throws: ConfException, Exception
  */
+@trusted /* assumeUnique is system */
 private immutable (GlValue[GlKey]) parse(string[int] lines)
 {
 	GlValue[GlKey] bundle;
-	if (lines == null) return cast (immutable GlValue[GlKey]) bundle;	//!!!!!!!!!!!!!!!
+	if (lines == null) return assumeUnique(bundle);	//!!!!!!!!!!!!!!!
 	
 	GlKey glKey = "";
 	Values[Key] glValue;
@@ -556,7 +560,7 @@ private immutable (GlValue[GlKey]) parse(string[int] lines)
 		}
 	}
 	if(glKey!="") bundle[glKey]=glValue/*.dup*/;
-	return cast (immutable GlValue[GlKey]) bundle;
+	return assumeUnique(bundle);
 }
 
     
@@ -567,6 +571,7 @@ private immutable (GlValue[GlKey]) parse(string[int] lines)
  *
  * Throws: ConfException, Exception
  */
+@trusted /* std.string.indexOf and std.array.split is system */
 private Tuple!(Key, Values) lineToConf(int lineNumber, string line, string glKey)
 {
 	long separatorPos = -1;
@@ -604,6 +609,7 @@ private Tuple!(Key, Values) lineToConf(int lineNumber, string line, string glKey
  *
  * Throws: ??Exception from string.indexOf 
  */
+@trusted /* std.string.indexOf is system */
 private string getFromLineGlKey(int lineNumber, string line)
 {
 	auto startGlKeySymbolIndex = line.indexOf(startGlKeySymbol);
@@ -623,6 +629,7 @@ private string getFromLineGlKey(int lineNumber, string line)
  * Throws: ErrnoException - open file exception
  * Throws: StdioException - read from file exception
  */
+@trusted /* std.string.indexOf is system */
 private string[int] copyFileToStrings(string filePath)
 {
 	string[int] outStr;
@@ -639,6 +646,7 @@ private string[int] copyFileToStrings(string filePath)
  *
  * Throws: ??Exception from string.indexOf 
  */
+@trusted /* std.string.indexOf is system */
 private string[int] cleanTrash(string[int] init)
 {
 	if (init is null) return null;
@@ -719,7 +727,8 @@ unittest
 	// get GlValue test
 	{
 		auto glValue = bundle.glValue("general");
-		assert (glValue == cast (immutable)["module_name":["Main"]]);
+		immutable gv = ["module_name":["Main"]];
+		assert (glValue == gv);
 	}
 
 	// get emty GlValue test
@@ -780,12 +789,13 @@ unittest
 {
 	version(configFileUnittest)
 	{
-		auto bundle = immutable ConfBundle("../test/test.conf");
+		auto bundle = immutable ConfBundle("./test/test.conf");
 
 		// getGlValue test
 		{
 			auto glValue = bundle.glValue("general");
-			assert (glValue == cast (immutable)["mod_name":["KPR"], "mod_type":["RptR11Transceiver"]]);
+			immutable gv = ["mod_name":["KPR"], "mod_type":["RptR11Transceiver"]];
+			assert (glValue == gv);
 		}
 
 		// getValues test
