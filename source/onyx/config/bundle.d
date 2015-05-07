@@ -481,12 +481,13 @@ private
  *
  * Throws: ConfException, Exception
  +/
+@trusted
 private immutable (GlValue[GlKey]) buildConfContainer(string configFilePath)
 {
 	try
 	{
-    	return buildConfContainer(copyFileToStrings(configFilePath));
-    }
+		return buildConfContainer(copyFileToStrings(configFilePath));
+	}
 	catch (ErrnoException ee)
 		throw new ConfException("errno = "~to!string(ee.errno)~" in file = "~ee.file~
 			"in line = "~to!string(ee.line)~"msg = "~ee.msg);
@@ -540,7 +541,7 @@ private immutable (GlValue[GlKey]) parse(string[int] lines)
 	
 	GlKey glKey = "";
 	Values[Key] glValue;
-	foreach(num; lines.keys.sort)
+	foreach(num; std.algorithm.sorting.sort(lines.keys))
 	{
 		auto glKeyInLine = getFromLineGlKey(num, lines[num]);
 		if (glKeyInLine != "")
