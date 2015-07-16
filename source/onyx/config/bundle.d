@@ -591,11 +591,15 @@ private Tuple!(Key, Values) lineToConf(int lineNumber, string line, string glKey
 	if (separatorPos <= 0) 
 		throw new ConfException ("Кеу is no in line "~to!string(lineNumber)~": "~line);
 
-	auto sLine = line.split(separator);
-	
-	auto key = sLine[0].strip;
-	
-	auto workLine = sLine[1].strip;
+	/* Changes for issue #2 ----------------------------------------- */
+	//auto sLine = line.split(separator);				|
+	//auto key = sLine[0].strip;					|
+	//auto workLine = sLine[1].strip;				|
+								//	|
+	auto key = line[0..separatorPos].strip; 		//	|
+	auto workLine = line[separatorPos+separator.length..$].strip;// |
+	/* -------------------------------------------------------------- */
+
 	if (workLine == "") throw new ConfException ("Value for key is no in line "~to!string(lineNumber)~": "~line);
 	
 	auto values = workLine.split();
