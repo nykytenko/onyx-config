@@ -64,13 +64,13 @@ Source code example:
 
 		/* Custom file parsing parameters */
 		auto parameters = immutable Parameters(
-		 		"[",			// Start Global key symbols
-				"]",			// End Global key symbols
+		 		"[",		// Start Global key symbols
+				"]",		// End Global key symbols
 				["=", "->"],	// Separator symbols between "Key" and "Values"
-				"#");			// Comment symbols
+				"#");		// Comment symbols
 
 
-		auto bundle = new immutable Bundle("./test/test.conf", p);
+		auto bundle = new immutable Bundle("./test/test.conf", parameters);
 
 		/* get GlValue */
 		auto glValue = bundle.glValue("general");
