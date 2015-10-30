@@ -1,0 +1,19 @@
+name "onyx-config"
+description "Configuration data processing in run-time."
+license "MIT"
+copyright "Copyright © 2014-2015, onyx"
+authors "Oleg Nykytenko"
+
+targetPath "./bin"
+
+configuration "test" {
+	targetType "executable"
+	sourcePaths "test/" "source/"
+	mainSourceFile "test/main.d"
+	versions "vTest"
+}
+
+configuration "library" {
+	targetType "library"
+	excludedSourceFiles "test/main.d"
+}
