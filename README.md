@@ -57,64 +57,68 @@ Configuration text file ("./test/test.conf"):
 
 Source code example:
 
-	import onyx.bundle;
+```D
+import onyx.bundle;
 
-	void main()
-	{
+void main()
+{
+	/* Custom file parsing parameters */
+	auto parameters = immutable Parameters(
+	 		"[",		// Start Global key symbols
+			"]",		// End Global key symbols
+			["=", "->"],	// Separator symbols between "Key" and "Values"
+			"#");		// Comment symbols
 
-		/* Custom file parsing parameters */
-		auto parameters = immutable Parameters(
-		 		"[",		// Start Global key symbols
-				"]",		// End Global key symbols
-				["=", "->"],	// Separator symbols between "Key" and "Values"
-				"#");		// Comment symbols
+	/* Create bundle from file */
+	auto bundle = new immutable Bundle("./test/test.conf", parameters);
+	
+	/* get string value from bundle */
+	auto val1 = bundle.value("general", "mod_name"); 
+	assert (val1 == "KPR");
+	
+	/* get integer value for line with many values from possition 1 */
+	auto val2 = bundle.value!int("protocol", "channel_switch_timeout", 1); 
+	assert (val2 == 100);
+	
+	/* get integer hex value (0 position) */
+	auto val3 = bundle.value!int("data_receive", "0xC179");
+	assert (val3 == 0xC179);
+	
+	/* get value for GlKey:"data_receive", Key:"0xC000~1, position:5 */
+	auto val4 = bundle.value("data_receive", "0xC000~1", 5);
+	assert (val4 == "(1*{0xC000}+0)");
+	
+	/* get Values array */
+	auto values = bundle.values("protocol", "channel_switch_timeout");
+	assert (values == ["1000", "100", "10"]);
+
+	/* get GlValue */
+	auto glValue = bundle.glValue("general");
+	immutable gv = ["mod_name":["KPR"], "mod_type":["RptR11Transceiver"]];
+	assert (glValue == gv);
 
 
-		auto bundle = new immutable Bundle("./test/test.conf", parameters);
-
-		/* get GlValue */
-		auto glValue = bundle.glValue("general");
-		immutable gv = ["mod_name":["KPR"], "mod_type":["RptR11Transceiver"]];
-		assert (glValue == gv);
-
-		/* get Values */
-		auto values = bundle.values("protocol", "channel_switch_timeout");
-		assert (values == ["1000", "100", "10"]);
-
-		/* get value for line with many values from possition 1 */
-		auto value1 = bundle.value("protocol", "channel_switch_timeout", 1); 
-		assert (value1 == "100");
-
-
-		/* get value for GlKey:"data_receive", Key:"0xC000~1, position:5 */
-		auto value2 = bundle.value("data_receive", "0xC000~1", 5);
-		assert (value2 == "(1*{0xC000}+0)");
-
-
-		/* getValue test (0 position) */
-		auto value3 = bundle.value!int("data_receive", "0xC179");
-		assert (value == 0xC179);
-
-
-		/* Build another bundle from string array */
-		string[] s2 = 
-		  ["[protocol]",
-		   "data_flow = input",
-		   "[new_gl_key]",
-		   "test_key = value1 value2"];	
-		auto bundle2 = new immutable ConfBundle(s2);
-		
-		/* Add two bundles. Created new bundle with data from both bundles */
-		auto newBundle = bundle + bundle2;
-		auto value5 = newBundle.value("general", "mod_name"); 
-		assert (value5 == "KPR");
-		auto value6 = newBundle.value("new_gl_key", "test_key", 1); 
-		assert (value6 == "value2");
-		
-		/* Get from bundle one global data part (in example with global key: "protocol")
-		auto partBundle = newBundle.subBundle("protocol");
-	}
-
+	/* Build another bundle from string array */
+	string[] s2 = 
+	  ["[protocol]",
+	   "data_flow = input",
+	   "[new_gl_key]",
+	   "test_key = value1 value2"];	
+	
+	/* Create bundle from string array */
+	auto bundle2 = new immutable ConfBundle(s2);
+	
+	/* Add two bundles. Created new bundle with data from both bundles */
+	auto newBundle = bundle + bundle2;
+	auto val5 = newBundle.value("general", "mod_name"); 
+	assert (val5 == "KPR");
+	auto val6 = newBundle.value("new_gl_key", "test_key", 1); 
+	assert (val6 == "value2");
+	
+	/* Get from bundle one global data part (in example with global key: "protocol") */
+	auto partBundle = newBundle.subBundle("protocol");
+}
+```
 
  
  
