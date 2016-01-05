@@ -870,14 +870,13 @@ Tuple!(Key, Values) lineToRecord(int lineNumber, string line, immutable Paramete
 	import std.string:strip;
 	import std.string:split;
 
-	long separatorPos = -1;
+	ptrdiff_t separatorPos = -1;
 	string separator;
 	foreach(currentSeparator; pars.keySeparators)
 	{
-		auto pos = line.indexOf(currentSeparator);
-		if (pos >= 0)
+		separatorPos = line.indexOf(currentSeparator);
+		if (separatorPos >= 0)
 		{
-			separatorPos = pos;
 			separator = currentSeparator;
 			break;
 		}
