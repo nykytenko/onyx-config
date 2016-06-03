@@ -811,7 +811,8 @@ immutable (GlValue[GlKey]) parse(string[int] lines, immutable Parameters pars)
 	
 	GlKey glKey = "";
 	Values[Key] glValue;
-	foreach(num; std.algorithm.sorting.sort(lines.keys))
+	import std.algorithm.sorting:sort;
+	foreach(num; sort(lines.keys))
 	{
 		auto glKeyInLine = getFromLineGlKey(lines[num], pars);
 		if (glKeyInLine != "")
