@@ -355,7 +355,11 @@ class Bundle
 			{
 				throw new ValueNotFoundException(vExceptionMsg);
 			}
-			return strToNum!T(tValues[pos]);
+			
+			static if(is(T == bool))
+				return to!bool(tValues[pos]);
+			else
+				return strToNum!T(tValues[pos]);
 		}
 		catch (ValuesNotFoundException vse)
 		{
