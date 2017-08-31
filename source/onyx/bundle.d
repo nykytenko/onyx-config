@@ -1,87 +1,17 @@
 /**
  * Container for data (for example configurations data)
  *
- * Copyright: © 2014-2015
+ * Copyright: © 2014-2017
  * License: MIT license. License terms written in licence.txt file
  *
- * Authors: Oleg Nykytenko (onyx), onyx.itdevelopment@gmail.com
+ * Authors: Oleg Nykytenko, oleg.nykytenko@gmail.com
  *
  * Version: 1.xx Date: 11.02.2014
  *
  * Version: 2.xx Date: 25.10.2015
  *
- *
- *
- * Examples:
- * ------------------------------------------------------------------------
- * Build immutable Bundle from config text file:
- * ------------------------------------------------------------------------
- * auto bundle = new immutable Bundle("../conf/file.conf");
- *
- * ------------------------------------------------------------------------
- * Build Bundle from string array:
- * ------------------------------------------------------------------------
- * string[] s = 
- *		["[general]",
- *		 "module_name = KPR",
- *		 "mod_type = RptR11Transceiver",
- *		 "[protocol]",
- *		 "data_flow = input"];	
- *
- * auto bundle = new immutable Bundle(s);
- *
- *
- * ------------------------------------------------------------------------
- * Build Bundle with custom parameters:
- * ------------------------------------------------------------------------
- * auto parameters = immutable Parameters(
- * 		"[",				// Start Global key symbols
- *		"]",				// End Global key symbols
- *		["=", " ", "->"],	// Separator symbols between "Key" and "Values"
- *		"#");				// Comment symbols
- *
- *	auto bundle = new immutable Bundle(s, parameters);
- *
- * ------------------------------------------------------------------------
- * Configuration file Exaple:
- * ------------------------------------------------------------------------
- *
- * # This is config file for RptR11 protocol Transceiver
- *
- * [general]
- * #------------------------------------------------------------
- * mod_name = KPR
- * mod_type = RptR11Transceiver
- *
- *
- * [log]
- * #-----------------------------------------------------------------
- * level = debug
- * appender = FileAppender
- * rolling = SizeBasedRollover
- * maxSize = 2K
- * maxHistory = 4
- * fileName = ./log/MainDebug.log
- *
- *
- * [protocol]
- * #------------------------------------------------------------
- * regime = slave #master - KPR; slave - OIK;
- * adr_RTU = 0x0A
- *
- *
- * [data_receive]
- * #----------------------------------------------------------------------------------------------------
- * # Addr in	Addr_out	type_of_data	name_of_data		send_to_next	channel		Formula
- * # KPR_adr	UTS_PMZ															priority
- * #----------------------------------------------------------------------------------------------------
- * #
- * 0xC000	->	0xC000		0x0B			XGES_Р_Станції		yes					1		(2*{0xC000}+10)+(-0.2*{0xC179}-5)+(0
- * 0xC000~1	->  0xC001		0x0B			XYGES_Р_Станції		yes					2		(1*{0xC000}+0)
- * 0xC179	->	0xC179		0x0B			XaES_Р_Станції		yes					1		1*{0xC179}+0
- *
  */
- 
+
 
 module onyx.bundle;
 
@@ -109,7 +39,7 @@ alias string Key;
 /**
  * GlValue - Bundle global data group
  */
-alias Values[Key] GlValue; 
+alias Values[Key] GlValue;
 
 
 /**
@@ -122,7 +52,7 @@ alias string GlKey;
 /**
  * Configuration exception
  */
-class BundleException:Exception 
+class BundleException:Exception
 {
 	@safe
 	this(string exString) pure nothrow
@@ -140,7 +70,7 @@ template childBundleException(string exceptionName)
 {
 	const char[] childBundleException =
 
-	"class " ~exceptionName~":BundleException 
+	"class " ~exceptionName~":BundleException
 	{
 		@safe
 		this(string exString) pure nothrow
@@ -235,7 +165,6 @@ class Bundle
 	private GlValue[GlKey] container;
 
 
-
 	/**
 	 * Build Bundle from text file
 	 *
@@ -247,7 +176,6 @@ class Bundle
 		auto lines = copyFileToStrings(filePath);
 		this(lines, pars);
 	}
-	
 
 
 	/**
@@ -262,7 +190,6 @@ class Bundle
 		foreach(line; lines)	nlines[++index] = line;
 		this(nlines, pars);
 	}
-
 
 
 	/**
@@ -286,7 +213,6 @@ class Bundle
 	}
 
 
-
 	/**
 	 * Get Global value from bundle
 	 *
@@ -300,13 +226,12 @@ class Bundle
 		{
 			throw new BundleException("Global Key is null");
 		}
-		if (glKey !in container) 
+		if (glKey !in container)
 		{
 			throw new GlKeyNotFoundException("Not found Global Key: ["~glKey~"]");
 		}
 		return container[glKey];
 	}
-
 
 
 	/**
@@ -336,7 +261,6 @@ class Bundle
 	}
 
 
-
 	/**
 	 * Get one value from bundle
 	 *
@@ -355,7 +279,7 @@ class Bundle
 			{
 				throw new ValueNotFoundException(vExceptionMsg);
 			}
-			
+
 			static if(is(T == bool))
 				return to!bool(tValues[pos]);
 			else
@@ -400,7 +324,6 @@ class Bundle
 	}
 
 
-
 	/**
 	 * Check is value present in bundle (First value from line)
 	 *
@@ -412,9 +335,8 @@ class Bundle
 	}
 
 
-
 	/**
-	 * Check is global key present in bundle 
+	 * Check is global key present in bundle
 	 *
 	 * Returns: if key present in bundle - true, else - false
 	 */
@@ -424,9 +346,8 @@ class Bundle
 	}
 
 
-
 	/**
-	 * Get global keys present in bundle 
+	 * Get global keys present in bundle
 	 *
 	 * Returns: GlKey array
 	 */
@@ -447,7 +368,6 @@ class Bundle
 	{
 		return container[glKey].keys;
 	}
-
 
 
 	/**
@@ -492,7 +412,6 @@ class Bundle
 	}
 
 
-
 	/**
 	 * Get from this bundle one global data part
 	 *
@@ -502,7 +421,6 @@ class Bundle
 	{
 		return new immutable Bundle([glKey:container[glKey]]);
 	}
-
 
 
 	/**
@@ -517,7 +435,7 @@ class Bundle
 		foreach (glKey; bundle.container.keys)
 		{
 			Values[Key] mutglValue;
-			
+
 			auto glValue = bundle.container[glKey];
 
 			foreach(key; glValue.keys)
@@ -525,7 +443,7 @@ class Bundle
 				mutglValue[key] = glValue[key].dup;
 			}
 			mutc[glKey] = mutglValue;
-			mutglValue = null;			
+			mutglValue = null;
 		}
 		return mutc;
 	}
@@ -538,7 +456,7 @@ class Bundle
 /************************************************************************************/
 unittest
 {
-	string[] s = 
+	string[] s =
 		["[general] 			# GlKey = general",
 		 "module_name = Main 	# Key = module_name, Values[0] = Main, keySeparator = EQUALS SIGN",
 		 "[DebugLogger]			# GlKey = DebugLogger",
@@ -577,7 +495,7 @@ unittest
 	}
 
 	// Value test (N pos)
-	{ 
+	{
 		auto value = bundle.value("data_receive", "0xC000", 3);
 		//assert (value == "yes");
 	}
@@ -613,14 +531,33 @@ unittest
 }
 
 
+unittest
+{
+    version(vTest)
+    {
+        auto bundle = new immutable Bundle("./test/simple.conf");
+
+        auto user = bundle.value("config", "user");
+        assert (user == "Mark");
+
+        auto connecting = bundle.value!bool("config", "connecting");
+        assert (connecting == true);
+
+        auto timeout = bundle.value!int("config", "timeout");
+        assert (timeout == 2000);
+
+        auto tmax = bundle.value!double("config", "tmax");
+        assert (tmax == 26.7);
+    }
+}
 
 unittest
 {
 	version(vTest)
 	{
-		auto p = immutable Parameters("[", "]", ["=", "->"], "#");
+		auto parameters = immutable Parameters("[", "]", ["=", "->"], "#");
 
-		auto bundle = new immutable Bundle("./test/test.conf", p);
+		auto bundle = new immutable Bundle("./test/test.conf", parameters);
 
 		// getGlValue test
 		{
@@ -638,12 +575,12 @@ unittest
 
 		/* get value for line with many values from possition 1 */
 		{
-			auto value = bundle.value("protocol", "channel_switch_timeout", 1); 
+			auto value = bundle.value("protocol", "channel_switch_timeout", 1);
 			assert (value == "100");
 		}
 
 		// getValue test (N pos)
-		{ 
+		{
 			auto value = bundle.value("data_receive", "0xC000~1", 5);
 			assert (value == "(1*{0xC000}+0)");
 		}
@@ -653,6 +590,27 @@ unittest
 			auto value = bundle.value!int("data_receive", "0xC179");
 			assert (value == 0xC179);
 		}
+
+
+        /* Build another bundle from string array */
+        string[] s2 =
+           ["[protocol]",
+           "data_flow = input",
+           "[new_gl_key]",
+           "test_key = value1 value2"];
+
+        /* Create bundle from string array */
+        auto bundle2 = new immutable Bundle(s2);
+
+        /* Add two bundles. Created new bundle with data from both bundles */
+        auto newBundle = bundle + bundle2;
+        auto val5 = newBundle.value("general", "mod_name");
+        assert (val5 == "KPR");
+        auto val6 = newBundle.value("new_gl_key", "test_key", 1);
+        assert (val6 == "value2");
+
+        /* Get from bundle one global data part (in example with global key: "protocol") */
+        auto partBundle = newBundle.subBundle("protocol");
 
 	}
 }
@@ -688,7 +646,7 @@ unittest
 
 unittest
 {
-	string[] s1 = 
+	string[] s1 =
 		["[general]",
 		 "module_name = Main",
 		 "[log]",
@@ -696,12 +654,12 @@ unittest
 		 "[data_receive]",
 		 "0xC000 ->		0x014B		0x0B		Рстанции	yes		1		(32*{0xC000}+0)"];
 
-	string[] s2 = 
+	string[] s2 =
 		["[general]",
 		 "module_name = KPR",
 		 "mod_type = RptR11Transceiver",
 		 "[protocol]",
-		 "data_flow = input"];	 
+		 "data_flow = input"];
 
 	auto p = immutable Parameters("[", "]", ["=", "->"], "#");
 
@@ -714,19 +672,19 @@ unittest
 	assert (value1 == "Main");
 
 	auto value2 = bundle.value("general", "mod_type");
-	assert (value2 == "RptR11Transceiver");	
+	assert (value2 == "RptR11Transceiver");
 
 	auto value3 = bundle.value("log", "level");
-	assert (value3 == "info");	
+	assert (value3 == "info");
 
 	auto value4 = bundle.value("protocol", "data_flow");
-	assert (value4 == "input");	
+	assert (value4 == "input");
 }
 
 
 unittest
 {
-	string[] s = 
+	string[] s =
 		["[general]",
 		 "module_name = Main",
 		 "[log]",
@@ -794,7 +752,6 @@ immutable (GlValue[GlKey]) buildContainer(string[int] lines, immutable Parameter
 }
 
 
-
 @system:
 
 /**
@@ -812,7 +769,7 @@ immutable (GlValue[GlKey]) parse(string[int] lines, immutable Parameters pars)
 
 	if ((lines is null) || (lines.length == 0))
 		return assumeUnique(container);
-	
+
 	GlKey glKey = "";
 	Values[Key] glValue;
 	import std.algorithm.sorting:sort;
@@ -829,7 +786,7 @@ immutable (GlValue[GlKey]) parse(string[int] lines, immutable Parameters pars)
 		}
 		else
 		{
-			if (glKey=="") 
+			if (glKey=="")
 				throw new GlKeyNotFoundException("First nonvoid line not contained global key: "~to!string(num)~": "~lines[num]);
 			Tuple!(Key, Values) parsedLine = lineToRecord(num, lines[num], pars);
 			glValue[parsedLine[0]] = parsedLine[1];
@@ -862,7 +819,6 @@ unittest
 }
 
 
-
 /**
  * Convert one string line to record
  *
@@ -887,18 +843,17 @@ Tuple!(Key, Values) lineToRecord(int lineNumber, string line, immutable Paramete
 		}
 	}
 
-	if (separatorPos <= 0) 
+	if (separatorPos <= 0)
 		throw new KeyNotFoundException ("Кеу is not present in line "~to!string(lineNumber)~": "~line);
 
 	auto key = line[0..separatorPos].strip;
 	auto workLine = line[separatorPos+separator.length..$].strip;
 
 	if (workLine == "") throw new ValuesNotFoundException ("Values for key is not present in line "~to!string(lineNumber)~": "~line);
-	
+
 	auto values = workLine.split();
 	return tuple(key, values);
 }
-
 
 
 /**
@@ -906,7 +861,7 @@ Tuple!(Key, Values) lineToRecord(int lineNumber, string line, immutable Paramete
  *
  * Returns: global key or ""
  *
- * Throws: Exception from string.indexOf 
+ * Throws: Exception from string.indexOf
  */
 string getFromLineGlKey(string line, immutable Parameters pars)
 {
@@ -931,7 +886,6 @@ unittest
 	line = "<<|tag|>>";
 	assert(getFromLineGlKey(line, pars1) == "tag");
 }
-
 
 
 /**
@@ -973,14 +927,14 @@ string[int] copyFileToStrings(string filePath)
  *
  * Returns: lines without trash on sides
  *
- * Throws: ??Exception from string.indexOf 
+ * Throws: ??Exception from string.indexOf
  */
 string[int] cleanTrash(string[int] init, immutable Parameters pars)
 {
 	import std.string:strip;
 
 	if (init is null) return null;
-	else 
+	else
 	{
 		string[int] _out;
 		foreach(key;init.byKey())
@@ -995,7 +949,7 @@ string[int] cleanTrash(string[int] init, immutable Parameters pars)
 			{
 				s = init[key].strip;
 			}
-			if (s != "") _out[key] = s;		
+			if (s != "") _out[key] = s;
 		}
 		return _out;
 	}
@@ -1021,8 +975,6 @@ unittest
 }
 
 
-
-
 /**
  * Convert hex string to integral number
  *
@@ -1035,13 +987,13 @@ N strToNum(N)(string strNum) if (isIntegral!N)
 	string sign = "";
 
 	if (strNum.length == 0) return 0;
-	
-	if (strNum.length == 1) 
+
+	if (strNum.length == 1)
 	{
 		if ((strNum[0] == '-') || (strNum[0] == '+') || (strNum[0] == '0')) return 0;
-		return to!N(strNum); 
+		return to!N(strNum);
 	}
-	
+
 	if (strNum[0] == '-')
 	{
 		sign = "-";
@@ -1084,7 +1036,6 @@ S strToNum(S)(string strNum) nothrow pure if (isSomeString!S)
 }
 
 
-
 unittest
 {
 	assert (strToNum!int("0x22") == 0x22);
@@ -1093,4 +1044,3 @@ unittest
 	assert (strToNum!double("0.25") == 0.25);
 	assert (strToNum!double("-1e-12") == -1e-12);
 }
-
