@@ -19,7 +19,7 @@ Simple configuration text file ("./test/simple.conf"):
     timeout = 2000
     tmax = 26.7
 
-    Source code example:
+Source code example:
 
 ```D
 import onyx.bundle;
