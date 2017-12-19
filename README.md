@@ -1,6 +1,6 @@
 # onyx-config
 
-Container for data (for example configurations data)
+Container for configurations data
 
 
 ## Key features:
@@ -47,17 +47,17 @@ void main()
 
 Configuration text file ("./test/test.conf"):
 
-    [general] # <-- This is Global Key (GlKey)
+    [general] # <-- Global Key (GlKey)
     #------------------------------------------------------------
     mod_name = KPR
     #  ^
-    #  |--- This is Key
+    #  |--- Key
 
     mod_type = RptR11Transceiver
     #        ^       ^
-    #        |       |--- This is Value
+    #        |       |--- Value
     #        |
-    #        |--- This is Key to Value Separator
+    #        |--- Key to Value Separator
 
 
     [protocol]
@@ -66,24 +66,24 @@ Configuration text file ("./test/test.conf"):
 
 
     [data_receive]
-    #----------------------------------------------------------------------------------------------------
-    # Addr in   Addr_out    type    name    send_to_next channel    Formula
-    # KPR_adr  	UTS_PMZ                                  priority
-    #----------------------------------------------------------------------------------------------------
+    #--------------------------------------------------------------------------------------------------------
+    # Addr in    Addr_out    type    name       send_to_next    channel     Formula
+    # KPR_adr    UTS_PMZ                                        priority
+    #--------------------------------------------------------------------------------------------------------
     #
-    0xC000   ->  0xC000     0x0B    XGES_Р      yes         1       (2*{0xC000}+10)+(-0.2*{0xC179}-5)
+    0xC000   ->   0xC000     0x0B    XGES_Р         yes             1       (2*{0xC000}+10)+(-0.2*{0xC179}-5)
     #        ^
-    #        |--- This is Key to Value Separator too
+    #        |--- Key to Value Separator too
 
-    0xC000~1 ->  0xC001     0x0B    XYGES_Р     yes         2       (1*{0xC000}+0)
+    0xC000~1 ->   0xC001     0x0B    XYGES_Р        yes             2       (1*{0xC000}+0)
     #  ^
-    #  |--- This is Key
+    #  |--- Key
 
-    0xC179   ->  0xC179     0x0B    XaES_Р      yes         1       1*{0xC179}+0
+    0xC179   ->   0xC179     0x0B    XaES_Р         yes             1       1*{0xC179}+0
     #               ^         ^
-    #               |         |--- This is possition 1 Value
+    #               |         |--- Position 1 Value
     #               |
-    #               |--- This is possition 0 Value
+    #               |--- Position 0 Value
 
 
 
