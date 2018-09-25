@@ -4,7 +4,7 @@ Container for configurations data
 
 
 ## Key features:
- - The Bundle is immutable container for save data.
+ - A Bundle is immutable container for saving data.
  - A Bundle may be created from text file or string array in run-time.
  - bundle1 + bundle2 operation
 
@@ -96,10 +96,10 @@ void main()
 {
     /* Custom file parsing parameters */
     auto parameters = immutable Parameters(
-            "[",        // Start Global key symbols
-            "]",        // End Global key symbols
-            ["=", "->"],// Separator symbols between "Key" and "Values"
-            "#");       // Comment symbols
+            "[",        // Start Global key symbols. "[" by default.
+            "]",        // End Global key symbols "]" by default.
+            ["=", "->"],// Separator symbols between "Key" and "Values". "=" by default.
+            "#");       // Comment symbol. "#" by default.
 
     /* Create bundle from file */
     auto bundle = new immutable Bundle("./test/test.conf", parameters);
