@@ -1,7 +1,7 @@
 name "onyx-config"
 description "Configuration data processing in run-time."
 license "MIT"
-copyright "Copyright © 2014-2017, Oleg Nykytenko"
+copyright "Copyright © 2014-2018"
 authors "Oleg Nykytenko"
 
 targetPath "./bin"
