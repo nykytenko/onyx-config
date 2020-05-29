@@ -1,17 +1,14 @@
 /**
- * Container for data (for example configurations data)
+ * Container for configurations data
  *
- * Copyright: © 2014-2018
+ * Copyright: © 2014-2020
  * License: MIT license. License terms written in licence.txt file
  *
  * Authors: Oleg Nykytenko, oleg.nykytenko@gmail.com
  *
  * Version: 1.xx Date: 11.02.2014
- *
  * Version: 2.xx Date: 25.10.2015
- *
  */
-
 
 module onyx.bundle;
 
@@ -20,7 +17,6 @@ import std.array;
 import std.algorithm;
 
 @safe:
-
 
 /************************************************************************************/
 /* Bundle element types                                                             */
