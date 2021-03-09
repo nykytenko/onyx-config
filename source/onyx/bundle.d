@@ -1,7 +1,7 @@
 /**
  * Container for configurations data
  *
- * Copyright: © 2014-2020
+ * Copyright: © 2014-2021
  * License: MIT license. License terms written in licence.txt file
  *
  * Authors: Oleg Nykytenko, oleg.nykytenko@gmail.com
