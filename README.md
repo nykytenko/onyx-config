@@ -1,6 +1,6 @@
 # onyx-config
 
-Container for configurations data
+Container for configuration data
 
 
 ## Key features:
